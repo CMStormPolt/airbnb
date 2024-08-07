@@ -1,23 +1,19 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo } from "react";
 import axios from "axios";
-import { AiFillGithub } from "react-icons/ai";
-import { FcGoogle } from "react-icons/fc";
 import { FieldValues, SubmitHandler, useForm } from "react-hook-form";
 import dynamic from "next/dynamic";
-import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 import { Modal } from "./Modal";
 import { Heading } from "../Heading";
 import { Input } from "../inputs/Input";
 import { toast } from 'react-hot-toast';
-import { Button } from "../Button";
 import { useRent } from "@/app/hooks/useRentModal";
 import { categories } from "../navbar/Categories";
 import { CategoryInput } from "../inputs/CategoryInput";
 import { CountrySelect } from "../inputs/CountrySelect";
-import { Map } from "../Map";
 import { Counter } from "../inputs/Counter";
 import { ImageUpload } from "../inputs/ImageUpload";
 
@@ -35,6 +31,7 @@ interface RentModalProps { }
 
 export const RentModal: React.FC<RentModalProps> = ({ }) => {
   const rentModal = useRent();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(STEPS.CATEGORY);
 
@@ -44,6 +41,28 @@ export const RentModal: React.FC<RentModalProps> = ({ }) => {
 
   const onNext = () => {
     setStep((value) => value + 1)
+  }
+
+  const onSubmit: SubmitHandler<FieldValues> = async (data) => {
+    if (step !== STEPS.PRICE) {
+      return onNext();
+    }
+
+    setIsLoading(true);
+
+    try {
+      await axios.post('/api/listings', data)
+      toast.success('Listing created!');
+      router.refresh();
+      reset();
+      setStep(STEPS.CATEGORY);
+      rentModal.onClose();
+    } catch(error) {
+      toast.error('Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
+
   }
 
   const actionLabel = useMemo(() => {
@@ -183,6 +202,54 @@ export const RentModal: React.FC<RentModalProps> = ({ }) => {
     )
   }
 
+  if (step === STEPS.DESCRIPTION) {
+    bodyContent = (
+      <div className="flex flex-col gap-8">
+        <Heading
+          title="How would you describe your place?"
+          subTitle="Short and sweet works best!"
+        />
+        <Input 
+          id="title"
+          label="Title"
+          disabled={isLoading}
+          register={register}
+          errors={errors}
+          required
+        />
+        <Input 
+          id="description"
+          label="Description"
+          disabled={isLoading}
+          register={register}
+          errors={errors}
+          required
+        />
+      </div>
+    )
+  }
+
+  if (step === STEPS.PRICE) {
+    bodyContent = (
+      <div className="flex flex-col gap-8">
+        <Heading
+          title="Now set your price"
+          subTitle="How much do you chart per night"
+        />
+         <Input 
+          formatPrice
+          id="price"
+          label="Price"
+          type="number"
+          disabled={isLoading}
+          register={register}
+          errors={errors}
+          required
+        />
+      </div>
+    )
+  }
+
   return (
     <Modal
       disabled={isLoading}
@@ -192,9 +259,8 @@ export const RentModal: React.FC<RentModalProps> = ({ }) => {
       secondaryActionLabel={secondaryLabel}
       secondaryAction={step === STEPS.CATEGORY ? undefined : onBack}
       onClose={rentModal.onClose}
-      onSubmit={onNext}
+      onSubmit={handleSubmit(onSubmit)}
       body={bodyContent}
-    // footer={footerContent}
     />
   )
 };

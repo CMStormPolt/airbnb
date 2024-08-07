@@ -7,6 +7,7 @@ import { useLogin } from "@/app/hooks/useLoginModal";
 import { User } from "@prisma/client";
 import { signOut } from "next-auth/react";
 import { useRent } from "@/app/hooks/useRentModal";
+import { useRouter } from "next/navigation";
 
 interface UserMenuProps {
     currentUser?: User | null
@@ -19,6 +20,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
     const loginModal = useLogin();
     const registerModal = useRegister();
     const rentModal = useRent();
+    const router = useRouter();
 
     const toggleOpen = useCallback(() => {
         setIsOpen((currentisOpen) => !currentisOpen)
@@ -58,19 +60,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                         {currentUser && (
                             <>
                                 <MenuItem
-                                    onClick={() => { }}
+                                    onClick={() => router.push('/trips')}
                                     label="My trips"
                                 />
                                 <MenuItem
-                                    onClick={() => { }}
+                                    onClick={() => router.push('/favourites')}
                                     label="My favourites"
                                 />
                                 <MenuItem
-                                    onClick={() => { }}
+                                    onClick={() => router.push('/reservations')}
                                     label="My reservations"
                                 />
                                 <MenuItem
-                                    onClick={() => { }}
+                                    onClick={() => router.push('/properties')}
                                     label="My properties"
                                 />
                                 <MenuItem

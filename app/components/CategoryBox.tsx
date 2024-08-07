@@ -37,7 +37,6 @@ export const CategoryBox: React.FC<CategoryBoxProps> = ({
             query: updatedQuery
         }, { skipNull: true })
 
-        console.log(url);
 
         router.push(url);
     }, [label, params, router])

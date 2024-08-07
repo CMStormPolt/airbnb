@@ -1,4 +1,3 @@
-import { create } from 'zustand';
 import countries from 'world-countries';
 
 interface formatedCountry {
